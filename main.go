@@ -10,6 +10,17 @@ import (
 	"github.com/streadway/amqp"
 )
 
+/*
+2ой сервис:
+Вычитывает из очереди кролика сообщения. Создаёт короткую ссылку и кладет в базу.
+База вида: урл, короткая ссылка, ттл.
+**** При запуске микросервиса ожидает сообщения в кролике и считывает их при появлении, затем добавляет в БД
+
+Соответственно если переходишь по этой ссылке и ттл не истёк, он тебя редиректит.
+**** Ссылка в виде: localhost:8001/to/?key=RySCu
+**** key - короткая ссылка
+*/
+
 const (
 	letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
@@ -69,14 +80,10 @@ func failOnError(err error, msg string) {
 }
 
 func redirectHandle(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("редирект")
-	fmt.Fprintf(w, "<h1>Редирект на какую-то страницу</h1>")
 	key := r.URL.Query().Get("key")
-	fmt.Println(key)
 	url, _ := db.GetUrl(key)
 	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusFound)
-	fmt.Fprintf(w, "Вы будете перенаправлены на : %s", url)
 	fmt.Fprintf(w, "<script>location='%s';</script>", url)
 	//http.Redirect(w, r, url, http.StatusFound)
 }
